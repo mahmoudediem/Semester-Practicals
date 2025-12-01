@@ -1,0 +1,25 @@
+I couldn't finish the steps required to create an AWS account cause I don't own a PAN card , so I'm sharing the steps should be followed in this practical as required.
+Connecting GitHub Actions to AWS Using OIDC: General explanation of how this setup works
+
+1) Creating an IAM Role in AWS:
+The process begins by creating an IAM role in AWS that GitHub Actions will use whenever it needs to interact with AWS. During this setup, the trusted identity type is set to
+OpenID Connect (OIDC), and GitHub is chosen as the identity provider. This allows GitHub to request temporary access to AWS when running workflows, without the need to store 
+permanent access keys. The trust policy is configured so that only specific GitHub repositories are allowed to assume the role.
+
+2) Adding the Necessary Permissions
+Once the role is created, a permission policy must be attached to it. This policy should include the AWS actions required by the project. For example, if Terraform is being used,
+the permissions typically include access to S3 for storing Terraform state files, access to DynamoDB for state locking, and any other services Terraform will manage. The goal is 
+to ensure the workflow has the minimum access it needs to perform its tasks safely.
+
+3) Configuring the GitHub Actions Workflow
+Inside GitHub, the workflow file must be configured to authenticate with AWS using the role created earlier. This is usually done with the aws-actions/configure-aws-credentials action.
+The workflow will request temporary credentials from AWS at runtime, using the role’s Amazon Resource Name (ARN) and the selected region. This allows GitHub Actions to interact with
+AWS securely while avoiding the risks of storing permanent access keys.
+
+4) Running Terraform in the Pipeline
+After AWS authentication is set up in the workflow, Terraform commands can run automatically through GitHub Actions. The pipeline is able to initialize Terraform, plan changes, and apply
+updates to AWS resources. All of these operations run under the permissions defined in the IAM role, ensuring controlled and audited access to the cloud environment.
+
+5) Using Protected Environments in GitHub
+To add another layer of safety, GitHub supports protected environments such as “prod” or “dev.” These environments can require manual approval before certain workflow steps run, 
+especiallythe Terraform apply step. This protection helps prevent unintended or unauthorized changes to AWS resources by ensuring human review before modifications are made.
